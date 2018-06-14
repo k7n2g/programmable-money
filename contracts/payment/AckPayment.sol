@@ -73,7 +73,7 @@ contract AckPayment is Ownable {
     // solium-disable-next-line security/no-block-members
     uint256 elapsedTimeInSeconds = block.timestamp.sub(initiated);
     uint256 elapsedTimeInHours = elapsedTimeInSeconds.div(60*60);
-    require(elapsedTimeInHours < timeoutInHours);
+    require(elapsedTimeInHours < timeoutInHours, "Can not be accepted after the timeout");
 
     state = State.Accepted;
   }
@@ -98,7 +98,7 @@ contract AckPayment is Ownable {
   * @dev Claim released amount, called by payee
   */
   function claimReleasedFunds() public onlyPayee {
-    require(state == State.Released);
+    require(state == State.Released, "Funds should be released by the owner first");
     destination.transfer(amount);
   }
 
@@ -106,7 +106,7 @@ contract AckPayment is Ownable {
   * @dev Claim released amount, called by payer
   */
   function claimRejectedFunds() public onlyOwner {
-    require(state == State.Rejected);
+    require(state == State.Rejected, "Funds should be rejected by the payee first");
     originator.transfer(amount);
   }
 
@@ -115,7 +115,7 @@ contract AckPayment is Ownable {
   */
   function claimTimeoutedFunds() public onlyOwner {
 
-    require(state != State.Rejected);
+    require(state != State.Rejected, "Payment should not be rejected");
     // solium-disable-next-line security/no-block-members
     uint256 elapsedTimeInSeconds = block.timestamp.sub(initiated);
     uint256 elapsedTimeInHours = elapsedTimeInSeconds.div(60*60);

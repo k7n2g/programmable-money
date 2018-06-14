@@ -14,7 +14,6 @@ contract('AckPayment', function ([ownerAddress, destinationAddress, other]) {
   const feesAmount = 1e16;
 
   const timeoutInHours = 1;
-  const timeoutInSeconds = timeoutInHours * 60 * 60;
 
   beforeEach(async function () {
     this.contract = await AckPayment.new(destinationAddress, amount, timeoutInHours);
@@ -111,8 +110,6 @@ contract('AckPayment', function ([ownerAddress, destinationAddress, other]) {
     await this.contract.claimRejectedFunds({ from: ownerAddress });
     const finalOriginatorBalance = web3.eth.getBalance(ownerAddress);
     assert(Math.abs(finalOriginatorBalance - initialOriginatorBalance) < feesAmount, 'Balance should not change');
-
-    console.log(Math.abs(finalOriginatorBalance - initialOriginatorBalance) < feesAmount);
   });
 
   it('should throw if claiming rejected funds not by the owner', async function () {
@@ -120,5 +117,25 @@ contract('AckPayment', function ([ownerAddress, destinationAddress, other]) {
     await this.contract.activate({ from: ownerAddress });
     await this.contract.reject({ from: destinationAddress });
     await this.contract.claimRejectedFunds({ from: other }).should.be.rejectedWith(EVMThrow);
+  });
+
+  it('should not allow to accept the payment after the timeout', async function () {
+    await web3.eth.sendTransaction({ from: ownerAddress, to: this.contract.address, value: amount });
+    await this.contract.activate({ from: ownerAddress });
+
+    // rewind to expire the payment plus one second
+    increaseTime(60 * 60 + 1);
+    await this.contract.accept({ from: destinationAddress }).should.be.rejectedWith(EVMThrow);
+  });
+
+  it('should allow to accept the payment if timeout has not expired', async function () {
+    await web3.eth.sendTransaction({ from: ownerAddress, to: this.contract.address, value: amount });
+    await this.contract.activate({ from: ownerAddress });
+
+    // rewind to expire the payment minus one second
+    increaseTime(60 * 60 - 1);
+    await this.contract.accept({ from: destinationAddress });
+    const isAccepted = await this.contract.isAccepted();
+    isAccepted.should.be.equal(true);
   });
 });
