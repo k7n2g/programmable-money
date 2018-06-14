@@ -84,11 +84,19 @@ contract AckPayment is Ownable {
   }
 
   /**
-  * @dev Claim released amount, called by payee.
+  * @dev Claim released amount, called by payee
   */
   function claimReleasedFunds() public onlyPayee {
     require(state == State.Released);
     destination.transfer(amount);
+  }
+
+    /**
+  * @dev Claim released amount, called by payer
+  */
+  function claimRejectedFunds() public onlyOwner {
+    require(state == State.Rejected);
+    originator.transfer(amount);
   }
 
   /**

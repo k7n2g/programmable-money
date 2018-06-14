@@ -11,6 +11,7 @@ const AckPayment = artifacts.require('AckPayment');
 
 contract('AckPayment', function ([ownerAddress, destinationAddress, other]) {
   const amount = web3.toWei(1.0, 'ether');
+  const feesAmount = 1e16;
 
   const timeoutInHours = 1;
   const timeoutInSeconds = timeoutInHours * 60 * 60;
@@ -99,6 +100,25 @@ contract('AckPayment', function ([ownerAddress, destinationAddress, other]) {
     await this.contract.claimReleasedFunds({ from: destinationAddress });
     const destinationBalanceAfterClaim = web3.eth.getBalance(destinationAddress);
     destinationBalanceAfterClaim.should.be.not.equal(destinationBalance);
-    assert(Math.abs(destinationBalanceAfterClaim - destinationBalance - amount) < 1e16);
+    assert(Math.abs(destinationBalanceAfterClaim - destinationBalance - amount) < feesAmount);
+  });
+
+  it('should allow to claim back rejected payment by payer', async function () {
+    const initialOriginatorBalance = web3.eth.getBalance(ownerAddress);
+    await web3.eth.sendTransaction({ from: ownerAddress, to: this.contract.address, value: amount });
+    await this.contract.activate({ from: ownerAddress });
+    await this.contract.reject({ from: destinationAddress });
+    await this.contract.claimRejectedFunds({ from: ownerAddress });
+    const finalOriginatorBalance = web3.eth.getBalance(ownerAddress);
+    assert(Math.abs(finalOriginatorBalance - initialOriginatorBalance) < feesAmount, 'Balance should not change');
+
+    console.log(Math.abs(finalOriginatorBalance - initialOriginatorBalance) < feesAmount);
+  });
+
+  it('should throw if claiming rejected funds not by the owner', async function () {
+    await web3.eth.sendTransaction({ from: ownerAddress, to: this.contract.address, value: amount });
+    await this.contract.activate({ from: ownerAddress });
+    await this.contract.reject({ from: destinationAddress });
+    await this.contract.claimRejectedFunds({ from: other }).should.be.rejectedWith(EVMThrow);
   });
 });
