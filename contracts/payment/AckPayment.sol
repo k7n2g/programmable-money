@@ -17,6 +17,8 @@ contract AckPayment is Ownable {
 
   enum State { Created, Funded, Accepted, Rejected, Released }
   State public state;
+  
+  uint256 initiated;
 
   /**
    * @dev Throws if called by any account other than the payee.
@@ -42,6 +44,9 @@ contract AckPayment is Ownable {
     timeoutInHours = _timeoutInHours;
 
     state = State.Created;
+
+    // solium-disable-next-line security/no-block-members
+    initiated = block.timestamp;
   }
 
   /**
@@ -64,6 +69,12 @@ contract AckPayment is Ownable {
    */
   function accept() public onlyPayee {
     require(state == State.Funded);
+
+    // solium-disable-next-line security/no-block-members
+    uint256 elapsedTimeInSeconds = block.timestamp.sub(initiated);
+    uint256 elapsedTimeInHours = elapsedTimeInSeconds.div(60*60);
+    require(elapsedTimeInHours < timeoutInHours);
+
     state = State.Accepted;
   }
 
@@ -91,11 +102,27 @@ contract AckPayment is Ownable {
     destination.transfer(amount);
   }
 
-    /**
+  /**
   * @dev Claim released amount, called by payer
   */
   function claimRejectedFunds() public onlyOwner {
     require(state == State.Rejected);
+    originator.transfer(amount);
+  }
+
+  /**
+  * @dev Claim not accepted funds
+  */
+  function claimTimeoutedFunds() public onlyOwner {
+
+    require(state != State.Rejected);
+    // solium-disable-next-line security/no-block-members
+    uint256 elapsedTimeInSeconds = block.timestamp.sub(initiated);
+    uint256 elapsedTimeInHours = elapsedTimeInSeconds.div(60*60);
+    require(elapsedTimeInHours > timeoutInHours);
+
+    // reject payment
+    state = State.Rejected;
     originator.transfer(amount);
   }
 
