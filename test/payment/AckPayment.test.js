@@ -19,12 +19,22 @@ contract('AckPayment', function ([ownerAddress, destinationAddress, other]) {
     this.contract = await AckPayment.new(destinationAddress, amount, timeoutInHours);
   });
 
-  it('should reject contruction if amount is wrong', async function () {
-
+  it('should reject if payment amount is not positive', async function () {
     const wrongAmount = 0;
     await AckPayment.new(destinationAddress,
       wrongAmount,
       timeoutInHours).should.be.rejectedWith(EVMThrow);
+  });
+
+  it('should reject if timeout is not positive', async function () {
+    const wrongTimeout = 0;
+    await AckPayment.new(destinationAddress,
+      amount,
+      wrongTimeout).should.be.rejectedWith(EVMThrow);
+  });
+
+  it('should disable activation if not sufficiently funded', async function () {
+    await this.contract.activate({ from: ownerAddress }).should.be.rejectedWith(EVMThrow);
   });
 
   it('should enable activation if sufficiently funded', async function () {
@@ -126,16 +136,5 @@ contract('AckPayment', function ([ownerAddress, destinationAddress, other]) {
     // rewind to expire the payment plus one second
     increaseTime(60 * 60 + 1);
     await this.contract.accept({ from: destinationAddress }).should.be.rejectedWith(EVMThrow);
-  });
-
-  it('should allow to accept the payment if timeout has not expired', async function () {
-    await web3.eth.sendTransaction({ from: ownerAddress, to: this.contract.address, value: amount });
-    await this.contract.activate({ from: ownerAddress });
-
-    // rewind to expire the payment minus one second
-    increaseTime(60 * 60 - 1);
-    await this.contract.accept({ from: destinationAddress });
-    const isAccepted = await this.contract.isAccepted();
-    isAccepted.should.be.equal(true);
   });
 });
