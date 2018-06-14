@@ -27,22 +27,42 @@ contract('AckPayment', function ([ownerAddress, destinationAddress, other]) {
       timeoutInHours).should.be.rejectedWith(EVMThrow);
   });
 
-  it('should accept activation if sufficiently funded', async function () {
+  it('should enable activation if sufficiently funded', async function () {
     await web3.eth.sendTransaction({ from: ownerAddress, to: this.contract.address, value: amount });
     await this.contract.activate({ from: ownerAddress });
-    const isActive = await this.contract.isActive();
-    isActive.should.be.equal(true);
+    const isFunded = await this.contract.isFunded();
+    isFunded.should.be.equal(true);
   });
 
-  it('should accept funding the reward by the owner', async function () {
+  it('should enable funding the reward by the owner', async function () {
     await web3.eth.sendTransaction({ from: ownerAddress, to: this.contract.address, value: amount });
     const balance = web3.eth.getBalance(this.contract.address);
     balance.should.be.bignumber.equal(amount);
   });
 
-  it('should accept funding the reward by the external caller', async function () {
+  it('should enable funding the reward by the external caller', async function () {
     await web3.eth.sendTransaction({ from: other, to: this.contract.address, value: amount });
     const balance = web3.eth.getBalance(this.contract.address);
     balance.should.be.bignumber.equal(amount);
+  });
+
+  it('should allow to accept the payment by payee', async function () {
+    await web3.eth.sendTransaction({ from: ownerAddress, to: this.contract.address, value: amount });
+    await this.contract.activate({ from: ownerAddress });
+    await this.contract.accept({ from: destinationAddress });
+    const isAccepted = await this.contract.isAccepted();
+    isAccepted.should.be.equal(true);
+  });
+
+  it('should reject if accepted not by the payee but by the owner', async function () {
+    await web3.eth.sendTransaction({ from: ownerAddress, to: this.contract.address, value: amount });
+    await this.contract.activate({ from: ownerAddress });
+    await this.contract.accept({ from: ownerAddress }).should.be.rejectedWith(EVMThrow);
+  });
+
+  it('should reject if accepted not by the payee but by the other account', async function () {
+    await web3.eth.sendTransaction({ from: ownerAddress, to: this.contract.address, value: amount });
+    await this.contract.activate({ from: ownerAddress });
+    await this.contract.accept({ from: other }).should.be.rejectedWith(EVMThrow);
   });
 });

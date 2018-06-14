@@ -15,8 +15,16 @@ contract AckPayment is Ownable {
   uint256 public amount;
   uint256 public timeoutInHours;
 
-  enum State { Created, Funded, Accepted, Released }
+  enum State { Created, Funded, Accepted, Rejected, Released }
   State public state;
+
+  /**
+   * @dev Throws if called by any account other than the payee.
+   */
+  modifier onlyPayee() {
+    require(msg.sender == destination);
+    _;
+  }
 
   /**
    * @dev Constructor
@@ -52,9 +60,33 @@ contract AckPayment is Ownable {
   }
 
   /**
-   * @dev Get current state
+   * @dev Accept payment 
    */
-  function isActive() public view returns (bool) {
+  function accept() public onlyPayee {
+    require(state == State.Funded);
+    state = State.Accepted;
+  }
+
+  /**
+   * @dev Reject payment 
+   */
+  function reject() public onlyPayee {
+    require(state == State.Funded);
+    state = State.Rejected;
+  }
+
+  /**
+   * @dev getter to check if contract is funded
+   */
+  function isFunded() public view returns (bool) {
     return State.Funded == state;
+  }
+
+
+  /**
+   * @dev getter to check if contract is accepted
+   */
+  function isAccepted() public view returns (bool) {
+    return State.Accepted == state;
   }
 }
