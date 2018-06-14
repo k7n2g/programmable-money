@@ -65,4 +65,40 @@ contract('AckPayment', function ([ownerAddress, destinationAddress, other]) {
     await this.contract.activate({ from: ownerAddress });
     await this.contract.accept({ from: other }).should.be.rejectedWith(EVMThrow);
   });
+
+  it('should allow to release the payment by payer', async function () {
+    await web3.eth.sendTransaction({ from: ownerAddress, to: this.contract.address, value: amount });
+    await this.contract.activate({ from: ownerAddress });
+    await this.contract.accept({ from: destinationAddress });
+    await this.contract.release({ from: ownerAddress });
+    const isReleased = await this.contract.isReleased();
+    isReleased.should.be.equal(true);
+  });
+
+  it('should throw if attempted to be released by not owner', async function () {
+    await web3.eth.sendTransaction({ from: ownerAddress, to: this.contract.address, value: amount });
+    await this.contract.activate({ from: ownerAddress });
+    await this.contract.accept({ from: destinationAddress });
+    await this.contract.release({ from: other }).should.be.rejectedWith(EVMThrow);
+  });
+
+  it('should throw if attempted to be claimed not by not payee', async function () {
+    await web3.eth.sendTransaction({ from: ownerAddress, to: this.contract.address, value: amount });
+    await this.contract.activate({ from: ownerAddress });
+    await this.contract.accept({ from: destinationAddress });
+    await this.contract.release({ from: ownerAddress });
+    await this.contract.claimReleasedFunds({ from: other }).should.be.rejectedWith(EVMThrow);
+  });
+
+  it('should allow to claim the payment by payee', async function () {
+    await web3.eth.sendTransaction({ from: ownerAddress, to: this.contract.address, value: amount });
+    await this.contract.activate({ from: ownerAddress });
+    await this.contract.accept({ from: destinationAddress });
+    await this.contract.release({ from: ownerAddress });
+    const destinationBalance = web3.eth.getBalance(destinationAddress);
+    await this.contract.claimReleasedFunds({ from: destinationAddress });
+    const destinationBalanceAfterClaim = web3.eth.getBalance(destinationAddress);
+    destinationBalanceAfterClaim.should.be.not.equal(destinationBalance);
+    assert(Math.abs(destinationBalanceAfterClaim - destinationBalance - amount) < 1e16);
+  });
 });

@@ -76,6 +76,22 @@ contract AckPayment is Ownable {
   }
 
   /**
+   * @dev Release payment 
+   */
+  function release() public onlyOwner {
+    require(state == State.Accepted);
+    state = State.Released;
+  }
+
+  /**
+  * @dev Claim released amount, called by payee.
+  */
+  function claimReleasedFunds() public onlyPayee {
+    require(state == State.Released);
+    destination.transfer(amount);
+  }
+
+  /**
    * @dev getter to check if contract is funded
    */
   function isFunded() public view returns (bool) {
@@ -89,4 +105,12 @@ contract AckPayment is Ownable {
   function isAccepted() public view returns (bool) {
     return State.Accepted == state;
   }
+
+  /**
+   * @dev getter to check if contract is released
+   */
+  function isReleased() public view returns (bool) {
+    return State.Released == state;
+  }
+
 }
