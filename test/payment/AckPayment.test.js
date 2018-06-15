@@ -53,7 +53,11 @@ contract('AckPayment', function ([ownerAddress, destinationAddress, other]) {
     await this.contract.claimReleasedFunds({ from: destinationAddress }).should.be.rejectedWith(EVMThrow);
   });
 
-  it('should throw if attempted to be released too soon', async function () {
+  it('should throw if attempted to be released because of the timeout too soon', async function () {
+    await this.contract.claimTimeoutedFunds({ from: ownerAddress }).should.be.rejectedWith(EVMThrow);
+  });
+
+  it('should throw if attempted to be released because of the timeout too soon', async function () {
     await this.contract.claimRejectedFunds({ from: ownerAddress }).should.be.rejectedWith(EVMThrow);
   });
 
@@ -176,5 +180,12 @@ contract('AckPayment', function ([ownerAddress, destinationAddress, other]) {
     await this.contract.claimTimeoutedFunds({ from: ownerAddress });
     const finalOriginatorBalance = web3.eth.getBalance(ownerAddress).toNumber();
     assert(Math.abs(finalOriginatorBalance - initialOriginatorBalance) < feesAmount, 'Balance should not change');
+  });
+
+  it('should not allow to claim back timeouted funds too soon', async function () {
+    await web3.eth.sendTransaction({ from: ownerAddress, to: this.contract.address, value: amount });
+    await this.contract.activate({ from: ownerAddress });
+    increaseTime(60 * 60 - 2);
+    await this.contract.claimTimeoutedFunds({ from: ownerAddress }).should.be.rejectedWith(EVMThrow);
   });
 });
