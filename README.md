@@ -22,23 +22,22 @@ II. Amount:
 1) **Amount** which Originator would like to send to Destination, using Proxy
 
 III. Steps:
+
 0) Alice and Bob download the app from AppStore/Google Play, and fund it with Ether/ERC20/any other digital asset on Ethereum blockchain.
 1) *Originator* sends *Amount* to *Proxy*, specifying destination and timeout (Alice sends 1 ETH to Bob via _Proxy_, specifying timeout to 24h)
-2) **Destination** app receives a notification that payment was initiated, and has a choice to:
+2) **Destination** app receives a notification that payment was initiated, acknowledges the payment (see 2a to see alternative)
+3) *Originator* receives notification that payment was accepted, and has a choice to: 
+4) *Originator* releases the funds
+5) *Destinatior* receives funds 
 
-First use case:
-3) acknowledge the payment
-4) *Originator* receives notification that payment was accepted, and has a choice to:
+or 
 
-First use case - *Originator* 
-5a) *Originator* releases the funds
-6a) *Destinatior* receives funds 
+2) *Originator* rejects the payment
+3) *Destination* receives notification that payment was rejected 
 
-Second use case - with no:
-5b) *Originator* rejects the payment
-6a) *Destination* receives funds 
+or
 
-7) In case if *Destination* has not acknowledged the payment before the timeout, funds are returned to the payer 
+2) In case if *Destination* has not acknowledged the payment before the timeout, funds are returned to the *Originator* 
 
 
 ## Security
