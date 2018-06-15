@@ -65,4 +65,4 @@ In addition, transparency of Ethereum Blockchain is adding audiatibility of all 
 Probably instead of focusing how to make better (faster) payment mechanism (strong competitors, such as Visa and Mastercard), it is wiser to create scenarios which were not possible before, such as trivially easy to use smart contracts for non trivial use cases - such as escrow, pre-paid and other small (but important) payment related scenarios
 
 ## License
-Code released under the [MIT License]
+Code released under the [MIT License](LICENSE)
