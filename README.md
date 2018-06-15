@@ -1,6 +1,6 @@
 # Use Cases for Programmable Money
-[![Build Status](https://img.shields.io/travis/miktam/programmable-money.svg?branch=master&style=flat-square)](https://travis-ci.org/miktam/programmable-money)
-[![Coverage Status](https://img.shields.io/coveralls/github/miktam/programmable-moneymaster.svg?style=flat-square)](https://coveralls.io/github/miktam/programmable-money?branch=master)
+[![Build Status](https://travis-ci.org/miktam/programmable-money.svg?branch=master)](https://travis-ci.org/miktam/programmable-money)
+[![Coverage Status](https://coveralls.io/repos/github/miktam/programmable-money/badge.svg?branch=master)](https://coveralls.io/github/miktam/programmable-money?branch=master)
 
 ## Smart Contracts
 
