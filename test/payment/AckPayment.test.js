@@ -37,6 +37,26 @@ contract('AckPayment', function ([ownerAddress, destinationAddress, other]) {
     await this.contract.activate({ from: ownerAddress }).should.be.rejectedWith(EVMThrow);
   });
 
+  it('should throw if attempted to be released too soon', async function () {
+    await this.contract.release({ from: ownerAddress }).should.be.rejectedWith(EVMThrow);
+  });
+
+  it('should throw if attempted to be rejected too soon', async function () {
+    await this.contract.reject({ from: destinationAddress }).should.be.rejectedWith(EVMThrow);
+  });
+
+  it('should throw if attempted to be accepted too soon', async function () {
+    await this.contract.accept({ from: destinationAddress }).should.be.rejectedWith(EVMThrow);
+  });
+
+  it('should throw if attempted to be released too soon', async function () {
+    await this.contract.claimReleasedFunds({ from: destinationAddress }).should.be.rejectedWith(EVMThrow);
+  });
+
+  it('should throw if attempted to be released too soon', async function () {
+    await this.contract.claimRejectedFunds({ from: ownerAddress }).should.be.rejectedWith(EVMThrow);
+  });
+
   it('should enable activation if sufficiently funded', async function () {
     await web3.eth.sendTransaction({ from: ownerAddress, to: this.contract.address, value: amount });
     await this.contract.activate({ from: ownerAddress });
@@ -113,12 +133,12 @@ contract('AckPayment', function ([ownerAddress, destinationAddress, other]) {
   });
 
   it('should allow to claim back rejected payment by payer', async function () {
-    const initialOriginatorBalance = web3.eth.getBalance(ownerAddress);
+    const initialOriginatorBalance = web3.eth.getBalance(ownerAddress).toNumber();
     await web3.eth.sendTransaction({ from: ownerAddress, to: this.contract.address, value: amount });
     await this.contract.activate({ from: ownerAddress });
     await this.contract.reject({ from: destinationAddress });
     await this.contract.claimRejectedFunds({ from: ownerAddress });
-    const finalOriginatorBalance = web3.eth.getBalance(ownerAddress);
+    const finalOriginatorBalance = web3.eth.getBalance(ownerAddress).toNumber();
     assert(Math.abs(finalOriginatorBalance - initialOriginatorBalance) < feesAmount, 'Balance should not change');
   });
 
@@ -136,5 +156,15 @@ contract('AckPayment', function ([ownerAddress, destinationAddress, other]) {
     // rewind to expire the payment plus one second
     increaseTime(60 * 60 + 1);
     await this.contract.accept({ from: destinationAddress }).should.be.rejectedWith(EVMThrow);
+  });
+
+  it('should allow to claim back rejected funds', async function () {
+    const initialOriginatorBalance = web3.eth.getBalance(ownerAddress).toNumber();
+    await web3.eth.sendTransaction({ from: ownerAddress, to: this.contract.address, value: amount });
+    await this.contract.activate({ from: ownerAddress });
+    await this.contract.reject({ from: destinationAddress });
+    await this.contract.claimRejectedFunds({ from: ownerAddress });
+    const finalOriginatorBalance = web3.eth.getBalance(ownerAddress).toNumber();
+    assert(Math.abs(finalOriginatorBalance - initialOriginatorBalance) < feesAmount, 'Balance should not change');
   });
 });

@@ -15,7 +15,7 @@ contract AckPayment is Ownable {
   uint256 public amount;
   uint256 public timeoutInHours;
 
-  enum State { Funded, Accepted, Rejected, Released }
+  enum State { Created, Funded, Accepted, Rejected, Released }
   State public state;
   
   uint256 initiated;
@@ -45,6 +45,7 @@ contract AckPayment is Ownable {
 
     // solium-disable-next-line security/no-block-members
     initiated = block.timestamp;
+    state = State.Created;
   }
 
   /**
@@ -112,7 +113,7 @@ contract AckPayment is Ownable {
   */
   function claimTimeoutedFunds() public onlyOwner {
 
-    require(state != State.Rejected, "Payment should not be rejected");
+    require(state == State.Funded, "Payment should be funded");
     // solium-disable-next-line security/no-block-members
     uint256 elapsedTimeInSeconds = block.timestamp.sub(initiated);
     uint256 elapsedTimeInHours = elapsedTimeInSeconds.div(60*60);
