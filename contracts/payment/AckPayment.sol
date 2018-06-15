@@ -3,6 +3,7 @@ pragma solidity ^0.4.23;
 import "../math/SafeMath.sol";
 import "../ownership/Ownable.sol";
 
+
 /**
  * @title AckPayment
  * @dev Base contract supporting payments with ack
@@ -34,7 +35,8 @@ contract AckPayment is Ownable {
    * @param _amount        amount to send in wei
    * @param _timeoutInHours expiration time before destination will accept
    */
-  constructor(address _destination, uint256 _amount, uint256 _timeoutInHours) public payable {
+  constructor(address _destination, uint256 _amount, uint256 _timeoutInHours) 
+  public payable {
     require(_amount > 0);
     require(_timeoutInHours > 0);
 
@@ -71,7 +73,7 @@ contract AckPayment is Ownable {
     // solium-disable-next-line security/no-block-members
     uint256 elapsedTimeInSeconds = block.timestamp.sub(initiated);
     uint256 elapsedTimeInHours = elapsedTimeInSeconds.div(60*60);
-    require(elapsedTimeInHours < timeoutInHours, "Can not be accepted after the timeout");
+    require(elapsedTimeInHours < timeoutInHours, "Timeout occured");
 
     state = State.Accepted;
   }
@@ -96,7 +98,7 @@ contract AckPayment is Ownable {
   * @dev Claim released amount, called by payee
   */
   function claimReleasedFunds() public onlyPayee {
-    require(state == State.Released, "Funds should be released by the owner first");
+    require(state == State.Released, "Funds are not released");
     destination.transfer(amount);
   }
 
@@ -104,7 +106,7 @@ contract AckPayment is Ownable {
   * @dev Claim released amount, called by payer
   */
   function claimRejectedFunds() public onlyOwner {
-    require(state == State.Rejected, "Funds should be rejected by the payee first");
+    require(state == State.Rejected, "Funds are not rejected");
     originator.transfer(amount);
   }
 
@@ -130,7 +132,6 @@ contract AckPayment is Ownable {
   function isFunded() public view returns (bool) {
     return State.Funded == state;
   }
-
 
   /**
    * @dev getter to check if contract is accepted

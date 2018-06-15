@@ -3,9 +3,10 @@ pragma solidity ^0.4.23;
 import "../math/SafeMath.sol";
 import "../ownership/Ownable.sol";
 
+
 /**
- * @title AckPayment
- * @dev Base contract supporting payments with ack
+ * @title TimeLockedPayment
+ * @dev Time lock contract
  */
 contract TimeLockedPayment is Ownable {
   using SafeMath for uint256;

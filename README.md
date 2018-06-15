@@ -1,7 +1,6 @@
 # Use Cases for Programmable Money
-[![NPM Package](https://img.shields.io/npm/v/openzeppelin-solidity.svg?style=flat-square)](https://www.npmjs.org/package/openzeppelin-solidity)
-[![Build Status](https://img.shields.io/travis/OpenZeppelin/openzeppelin-solidity.svg?branch=master&style=flat-square)](https://travis-ci.org/OpenZeppelin/openzeppelin-solidity)
-[![Coverage Status](https://img.shields.io/coveralls/github/OpenZeppelin/openzeppelin-solidity/master.svg?style=flat-square)](https://coveralls.io/github/OpenZeppelin/openzeppelin-solidity?branch=master)
+[![Build Status](https://img.shields.io/travis/miktam/programmable-money.svg?branch=master&style=flat-square)](https://travis-ci.org/miktam/programmable-money)
+[![Coverage Status](https://img.shields.io/coveralls/github/miktam/programmable-moneymaster.svg?style=flat-square)](https://coveralls.io/github/miktam/programmable-money?branch=master)
 
 ## Smart Contracts
 
@@ -11,7 +10,7 @@ Reason to use is the ability to programatically (mathematically) ensure the outc
 - payment with conditions, such as acknowledge, locking, escrow and another examples of what is possible to automate money agreements. 
 
 ## Use Cases
-Payment with conditions (first acknowledged by payee and released by payer after.)
+A. Payment with condition: a) payer informs the payee, receives an acknowledgement, and confirms/releases the payment
 
 I. Players:
 1) **Originator** - payer
@@ -39,6 +38,22 @@ or
 
 2) In case if *Destination* has not acknowledged the payment before the timeout, funds are returned to the *Originator* 
 
+This use case is built on concepts of [PullPayment](https://github.com/OpenZeppelin/openzeppelin-solidity/blob/master/contracts/payment/PullPayment.sol) introduced by OpenZeppelin. 
+
+B. Time lock
+
+I. Players:
+1) **Originator** - payer
+3) **Proxy** - business logic of the transaction, smart contract
+
+II. Amount:
+1) **Amount** which Originator would like to lock, using *Proxy*
+
+III. Steps:
+
+1) *Originator* sends *Amount* to *Proxy*, specifying the locking time (Alice locks 1 ETH  via _Proxy_, specifying time to lock: 1 month)
+2) After 1 month, funds are released back to the *Originator*
+3) *Originator* pulls the funds
 
 ## Security
 Smart contracts are heavily influenced by [OpenZeppelin work](https://openzeppelin.org/api/docs/open-zeppelin.html) which focuses on community standards driven source code in Solidity. 
