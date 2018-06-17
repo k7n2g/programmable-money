@@ -1,4 +1,3 @@
-import increaseTime from '../helpers/increaseTime';
 const BigNumber = web3.BigNumber;
 const EVMThrow = require('../helpers/EVMThrow.js');
 
@@ -18,6 +17,12 @@ contract('EscrowProxy', function ([ownerAddress, destinationAddress, other]) {
 
   beforeEach(async function () {
     this.contract = await EscrowProxy.new(destinationAddress, amount);
+  });
+
+  it('should reject if initiated with garbage', async function () {
+    const wrongAmount = 0;
+    await EscrowProxy.new(destinationAddress,
+      wrongAmount).should.be.rejectedWith(EVMThrow);
   });
 
   it('initiate escrow', async function () {
