@@ -7,10 +7,14 @@ import "../ownership/Ownable.sol";
  */
 contract Signal is Ownable {
 
+  event Log(uint256 amount, bytes abc);
+
   constructor() 
   public payable {
     owner = msg.sender;
   }
 
-  function () public payable {}
+  function () public payable {
+    emit Log(msg.value, msg.data);
+  }
 }

@@ -21,10 +21,19 @@ contract('Signal', function ([ownerAddress, destinationAddress, other]) {
   });
 
   it('should send data among with the transaction', async function () {
+    const DATA_TO_SEND = 'my awesome data';
     const contractBalanceInitial = getBalanceInEther(this.contract.address);
-    web3.eth.sendTransaction({ from: ownerAddress, data: 'abcdef', to: this.contract.address, value: amount });
-    const contractBalanceAfter = getBalanceInEther(this.contract.address);
+    const txId = await web3.eth.sendTransaction({
+      from: ownerAddress,
+      data: web3.toHex(DATA_TO_SEND),
+      to: this.contract.address,
+      value: amount
+    });
 
-    (contractBalanceAfter - AMOUNT_IN_ETHER).should.equal(contractBalanceInitial);
+    const allTransactionInfo = web3.eth.getTransaction(txId);
+    // check if data is stored correctly
+    web3.toAscii(allTransactionInfo.input).should.equal(DATA_TO_SEND);
+
+    (getBalanceInEther(this.contract.address) - AMOUNT_IN_ETHER).should.equal(contractBalanceInitial);
   });
 });
