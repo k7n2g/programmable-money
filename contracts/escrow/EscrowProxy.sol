@@ -17,7 +17,9 @@ contract EscrowProxy is Ownable {
 
   uint256 public initiated;
 
-  enum State { Created, Funded, Accepted, Rejected, Released }
+  bool public locked;
+
+  enum State { Locked, Released }
   State public state;
 
   /**
@@ -35,7 +37,8 @@ contract EscrowProxy is Ownable {
 
     // solium-disable-next-line security/no-block-members
     initiated = block.timestamp;
-    state = State.Created;
+    state = State.Locked;
+    locked = true;
   }
 
   /**

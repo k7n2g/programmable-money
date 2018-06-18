@@ -8,7 +8,11 @@ require('chai')
 
 const EscrowProxy = artifacts.require('EscrowProxy');
 
-const getBalanceInEther = (address) => web3.fromWei(address, 'ether');
+const getBalanceInEther = (address) => {
+  const amount = web3.eth.getBalance(address);
+  return web3.fromWei(amount, 'ether').toNumber();
+};
+
 const fromWei = (amountInWei) => web3.fromWei(amountInWei, 'ether');
 
 contract('EscrowProxy', function ([ownerAddress, destinationAddress, other]) {
@@ -33,7 +37,6 @@ contract('EscrowProxy', function ([ownerAddress, destinationAddress, other]) {
         destination = destination0
     */
     const ownerBalance = getBalanceInEther(ownerAddress);
-    const destinationBalance = getBalanceInEther(destinationAddress);
     const proxyBalance = getBalanceInEther(this.contract.address);
 
     /* STATE I
@@ -48,8 +51,5 @@ contract('EscrowProxy', function ([ownerAddress, destinationAddress, other]) {
 
     const updatedEscrowBalance = getBalanceInEther(this.contract.address);
     assert(Math.abs(updatedEscrowBalance - proxyBalance - fromWei(amount)) < feesAmount);
-
-    const destinationBalanceUpdatedNot = getBalanceInEther(destinationAddress);
-    destinationBalanceUpdatedNot.should.equal(destinationBalance);
   });
 });
