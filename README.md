@@ -55,6 +55,13 @@ III. Steps:
 2) After 1 month, funds are released back to the *Originator*
 3) *Originator* pulls the funds
 
+C. Payment with confirmation: a) payer informs the payee, receives an acknowledgement, and confirms/releases the payment
+
+The difference comparing to scenario A is that here multisig approach is used.
+Initially senders issues a payment, which requires extra signature (mimicking multisig approach).
+The main issue here is how to make sure that receiver is still the person who was intended to be paid.
+It could be mitigated by creting an address of smart contract by the receiver, as one of the options.
+
 ## Security
 Smart contracts are heavily influenced by [OpenZeppelin work](https://openzeppelin.org/api/docs/open-zeppelin.html) which focuses on community standards driven source code in Solidity. 
 In addition, transparency of Ethereum Blockchain is adding audiatibility of all the steps.
