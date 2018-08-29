@@ -1,4 +1,5 @@
-import increaseTime from '../helpers/increaseTime';
+const { increaseTimeTo, duration } = require('../helpers/increaseTime');
+const { latestTime } = require('../helpers/latestTime');
 const BigNumber = web3.BigNumber;
 const EVMThrow = require('../helpers/EVMThrow.js');
 
@@ -17,6 +18,7 @@ contract('TimeLockedPayment', function ([ownerAddress, destinationAddress, other
   const ONE_MONTH_IN_HOURS = 24 * 30;
 
   beforeEach(async function () {
+    this.latestTime = await latestTime();
     this.contract = await TimeLockedPayment.new(amount, ONE_MONTH_IN_HOURS);
   });
 
@@ -66,8 +68,7 @@ contract('TimeLockedPayment', function ([ownerAddress, destinationAddress, other
     await this.contract.activate({ from: ownerAddress });
     const isFunded = await this.contract.isFunded();
     isFunded.should.be.equal(true);
-    const oneMonthInSeconds = ONE_MONTH_IN_HOURS * 60 * 60;
-    increaseTime(oneMonthInSeconds + 1);
+    increaseTimeTo(this.latestTime + duration.days(32));
     await this.contract.withdraw({ from: ownerAddress });
     const restoredBalance = web3.eth.getBalance(ownerAddress).toNumber();
     const isReleased = await this.contract.isReleased();

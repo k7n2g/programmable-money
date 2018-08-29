@@ -1,4 +1,5 @@
-import increaseTime from '../helpers/increaseTime';
+const { increaseTimeTo } = require('../helpers/increaseTime');
+const { latestTime } = require('../helpers/latestTime');
 const BigNumber = web3.BigNumber;
 const EVMThrow = require('../helpers/EVMThrow.js');
 
@@ -16,6 +17,7 @@ contract('AckPayment', function ([ownerAddress, destinationAddress, other]) {
   const timeoutInHours = 1;
 
   beforeEach(async function () {
+    this.latestTime = await latestTime();
     this.contract = await AckPayment.new(destinationAddress, amount, timeoutInHours);
   });
 
@@ -158,7 +160,7 @@ contract('AckPayment', function ([ownerAddress, destinationAddress, other]) {
     await this.contract.activate({ from: ownerAddress });
 
     // rewind to expire the payment plus one second
-    increaseTime(60 * 60 + 1);
+    increaseTimeTo(this.latestTime + 60 * 60 + 1);
     await this.contract.accept({ from: destinationAddress }).should.be.rejectedWith(EVMThrow);
   });
 
@@ -176,7 +178,7 @@ contract('AckPayment', function ([ownerAddress, destinationAddress, other]) {
     const initialOriginatorBalance = web3.eth.getBalance(ownerAddress).toNumber();
     await web3.eth.sendTransaction({ from: ownerAddress, to: this.contract.address, value: amount });
     await this.contract.activate({ from: ownerAddress });
-    increaseTime(60 * 60 * 2);
+    increaseTimeTo(this.latestTime + 60 * 60 * 2);
     await this.contract.claimTimeoutedFunds({ from: ownerAddress });
     const finalOriginatorBalance = web3.eth.getBalance(ownerAddress).toNumber();
     assert(Math.abs(finalOriginatorBalance - initialOriginatorBalance) < feesAmount, 'Balance should not change');
@@ -185,7 +187,7 @@ contract('AckPayment', function ([ownerAddress, destinationAddress, other]) {
   it('should not allow to claim back timeouted funds too soon', async function () {
     await web3.eth.sendTransaction({ from: ownerAddress, to: this.contract.address, value: amount });
     await this.contract.activate({ from: ownerAddress });
-    increaseTime(60 * 60 - 2);
+    increaseTimeTo(this.latestTime + 60 * 60 - 2);
     await this.contract.claimTimeoutedFunds({ from: ownerAddress }).should.be.rejectedWith(EVMThrow);
   });
 });
