@@ -62,5 +62,5 @@ if [ "$SOLIDITY_COVERAGE" = true ]; then
   fi
 else
   node_modules/.bin/truffle test "$@"
-  #node_modules/.bin/truffle test "test/signal/Signal.test.js"
+  #node_modules/.bin/truffle test "test/escrow/EscrowERC20.test.js"
 fi

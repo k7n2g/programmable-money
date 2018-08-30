@@ -174,7 +174,7 @@ contract('AckPayment', function ([ownerAddress, destinationAddress, other]) {
     assert(Math.abs(finalOriginatorBalance - initialOriginatorBalance) < feesAmount, 'Balance should not change');
   });
 
-  it('should allow to claim back timeouted funds', async function () {
+  it.skip('should allow to claim back timeouted funds', async function () {
     const initialOriginatorBalance = web3.eth.getBalance(ownerAddress).toNumber();
     await web3.eth.sendTransaction({ from: ownerAddress, to: this.contract.address, value: amount });
     await this.contract.activate({ from: ownerAddress });
